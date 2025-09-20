@@ -3,7 +3,7 @@ import numpy as np
 from sklearn.metrics.pairwise import cosine_similarity
 from app.services.embedding_service import EmbeddingService
 from app.services.llm_service import LLMService
-from app.config import settings
+from app.config.settings import settings
 
 
 class LogAnalyzer:
@@ -121,7 +121,7 @@ class LogAnalyzer:
         """Calculate cosine similarity between prompt and log embeddings"""
         prompt_embedding_array = np.array(prompt_embedding).reshape(1, -1)
         # converts array to 2d array for cosine comparison
-        log_embeddings_array = np.array(log_embeddings) # already a 2d array
+        log_embeddings_array = np.array(log_embeddings)  # already a 2d array
 
         similarities = cosine_similarity(prompt_embedding_array, log_embeddings_array)[0]
         return similarities
@@ -131,14 +131,25 @@ class LogAnalyzer:
         # Filter logs by semantic similarity
         filtered_logs = await self.filter_logs_by_similarity(logs, prompt)
 
+        # Prepare log texts for embedding cost calculation
+        log_texts = self.prepare_log_texts(logs)
+
+        # Calculate embedding cost
+        embedding_cost = self.embedding_service.calculate_embedding_cost(log_texts, prompt)
+
         # Analyze with LLM
         llm_result = await self.llm_service.analyze_logs(filtered_logs, prompt)
+
+        # Calculate total cost (embedding + LLM)
+        total_cost = embedding_cost + llm_result["cost"]
 
         return {
             "total_logs": len(logs),
             "filtered_logs_count": len(filtered_logs),
             "analysis": llm_result["analysis"],
-            "cost_usd": llm_result["cost"],
+            "cost_usd": total_cost,  # Now includes both embedding and LLM costs
+            "embedding_cost_usd": embedding_cost,  # Separate embedding cost for transparency
+            "llm_cost_usd": llm_result["cost"],  # Separate LLM cost for transparency
             "logs_analyzed": llm_result["logs_analyzed"],
-            "top_filtered_logs": filtered_logs[:10]  # Return top 10 for reference
+            "top_filtered_logs": filtered_logs[:settings.max_returned_logs]  # Use configurable max
         }

@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from app.api.routes import router
-from app.config import settings
+from app.config.settings import settings
 
 
 def create_app() -> FastAPI:

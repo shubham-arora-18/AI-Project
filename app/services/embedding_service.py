@@ -1,7 +1,8 @@
 from typing import List
 import openai
 from fastapi import HTTPException
-from app.config import settings
+from app.config.settings import settings
+from app.config.costs import model_costs
 
 
 class EmbeddingService:
@@ -38,6 +39,21 @@ class EmbeddingService:
         except Exception as e:
             raise HTTPException(status_code=500, detail=f"Error getting batch embeddings: {str(e)}")
 
+    def calculate_embedding_cost(self, texts: List[str], prompt: str = None) -> float:
+        """Calculate actual embedding cost based on text content using centralized costs"""
+        total_tokens = 0
+
+        # Count tokens for all log texts
+        for text in texts:
+            total_tokens += model_costs.estimate_token_count(text)
+
+        # Count tokens for prompt if provided
+        if prompt:
+            total_tokens += model_costs.estimate_token_count(prompt)
+
+        # Use centralized cost calculation
+        return round(model_costs.calculate_embedding_cost(self.model, total_tokens), 6)
+
     def estimate_embedding_cost(self, total_tokens: int) -> float:
-        """Estimate cost for embeddings (text-embedding-3-small: $0.00002 per 1K tokens)"""
-        return (total_tokens * 0.00002) / 1000
+        """Estimate cost for embeddings using centralized costs"""
+        return model_costs.calculate_embedding_cost(self.model, total_tokens)

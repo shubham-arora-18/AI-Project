@@ -1,7 +1,8 @@
 from typing import List, Dict, Any
 import openai
 from fastapi import HTTPException
-from app.config import settings
+from app.config.settings import settings
+from app.config.costs import model_costs
 
 
 class LLMService:
@@ -100,25 +101,24 @@ class LLMService:
         """Create the analysis prompt for the LLM"""
         return f"""
         Analyze the following logs for the incident: "{user_prompt}"
-        
+
         Logs (ordered by semantic relevance to the incident):
         {log_context}
-        
+
         Please provide:
         1. **Summary**: What's happening based on these logs?
         2. **Root Cause**: Most likely cause of the incident
         3. **Critical Logs**: Which specific log entries are most important?
         4. **Recommended Actions**: What should be done to resolve this?
-        
+
         Be concise and focus on actionable insights. The logs are already filtered for relevance.
         """
 
     def _calculate_analysis_cost(self, input_text: str, output_text: str) -> float:
-        """Calculate approximate cost for LLM analysis"""
-        # Rough token estimation (1 token ≈ 0.75 words)
-        input_tokens = len(input_text.split()) * 1.3
-        output_tokens = len(output_text.split()) * 1.3
+        """Calculate cost for LLM analysis using centralized costs"""
+        # Estimate token counts
+        input_tokens = model_costs.estimate_token_count(input_text)
+        output_tokens = model_costs.estimate_token_count(output_text)
 
-        # GPT-3.5-turbo pricing (approximate): $0.0015 per 1K input tokens, $0.002 per 1K output tokens
-        cost = (input_tokens * 0.0015 + output_tokens * 0.002) / 1000
-        return round(cost, 6)
+        # Use centralized cost calculation
+        return round(model_costs.calculate_chat_completion_cost(self.model, input_tokens, output_tokens), 6)
