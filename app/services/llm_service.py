@@ -60,7 +60,7 @@ class LLMService:
             timestamp = self._extract_timestamp(log)
 
             # Try to extract main message/content
-            main_content = self._extract_main_content(log)
+            main_content = log
 
             # Format for LLM
             log_line = f"Log {i} (similarity: {similarity:.3f}):"
@@ -70,7 +70,7 @@ class LLMService:
 
             log_lines.append(log_line)
 
-        return "\n".join(log_lines)
+        return "\n\n".join(log_lines)
 
     def _extract_timestamp(self, log: Dict[str, Any]) -> str:
         """Extract timestamp from various possible fields"""
@@ -83,7 +83,7 @@ class LLMService:
     def _extract_main_content(self, log: Dict[str, Any]) -> str:
         """Extract the main content/message from the log"""
         # Try message fields first
-        message_fields = ['message', 'msg', 'log', 'content', 'description']
+        message_fields = ['message', 'msg', 'log', 'content', 'description', 'body']
         for field in message_fields:
             if field in log and log[field]:
                 return str(log[field])

@@ -13,7 +13,9 @@ class AnalysisResponse(BaseModel):
     total_logs: int
     filtered_logs_count: int
     analysis: str
-    cost_usd: float
+    embedding_cost_usd: float
+    llm_cost_usd: float
+    total_cost_usd: float
     top_filtered_logs: List[Dict[str, Any]]  # Flexible - any JSON structure
     success: bool
 

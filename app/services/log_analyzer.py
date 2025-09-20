@@ -87,7 +87,7 @@ class LogAnalyzer:
             logs: List[Dict[str, Any]],
             prompt: str,
             top_n: int = None
-    ) -> List[Dict[str, Any]]:
+    ) -> (List[Dict[str, Any]], float):
         """Filter logs based on semantic similarity to the prompt"""
         if not logs:
             return []
@@ -96,6 +96,8 @@ class LogAnalyzer:
 
         # Prepare texts for embedding
         log_texts = self.prepare_log_texts(logs)
+
+        embedding_cost = self.embedding_service.calculate_embedding_cost(log_texts, prompt)
 
         # Get embeddings
         prompt_embedding = await self.embedding_service.get_embedding(prompt)
@@ -115,7 +117,7 @@ class LogAnalyzer:
             log_with_score['_extracted_text'] = log_texts[idx]  # For debugging
             filtered_logs.append(log_with_score)
 
-        return filtered_logs
+        return filtered_logs, embedding_cost
 
     def _calculate_similarities(self, prompt_embedding: List[float], log_embeddings: List[List[float]]) -> np.ndarray:
         """Calculate cosine similarity between prompt and log embeddings"""
@@ -129,13 +131,7 @@ class LogAnalyzer:
     async def analyze_logs(self, logs: List[Dict[str, Any]], prompt: str) -> Dict[str, Any]:
         """Complete log analysis pipeline"""
         # Filter logs by semantic similarity
-        filtered_logs = await self.filter_logs_by_similarity(logs, prompt)
-
-        # Prepare log texts for embedding cost calculation
-        log_texts = self.prepare_log_texts(logs)
-
-        # Calculate embedding cost
-        embedding_cost = self.embedding_service.calculate_embedding_cost(log_texts, prompt)
+        filtered_logs, embedding_cost = await self.filter_logs_by_similarity(logs, prompt)
 
         # Analyze with LLM
         llm_result = await self.llm_service.analyze_logs(filtered_logs, prompt)
@@ -147,7 +143,7 @@ class LogAnalyzer:
             "total_logs": len(logs),
             "filtered_logs_count": len(filtered_logs),
             "analysis": llm_result["analysis"],
-            "cost_usd": total_cost,  # Now includes both embedding and LLM costs
+            "total_cost_usd": total_cost,  # Now includes both embedding and LLM costs
             "embedding_cost_usd": embedding_cost,  # Separate embedding cost for transparency
             "llm_cost_usd": llm_result["cost"],  # Separate LLM cost for transparency
             "logs_analyzed": llm_result["logs_analyzed"],

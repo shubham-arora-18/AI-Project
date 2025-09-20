@@ -43,7 +43,9 @@ async def analyze_logs(
             total_logs=result["total_logs"],
             filtered_logs_count=result["filtered_logs_count"],
             analysis=result["analysis"],
-            cost_usd=result["cost_usd"],
+            embedding_cost_usd=result["embedding_cost_usd"],  # Separate embedding cost for transparency
+            llm_cost_usd=result["llm_cost_usd"],
+            total_cost_usd=result["total_cost_usd"],
             top_filtered_logs=result["top_filtered_logs"],
             success=True
         )

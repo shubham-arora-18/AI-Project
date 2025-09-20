@@ -1,7 +1,7 @@
 """
 Centralized cost configuration for OpenAI models.
 All pricing is per 1,000 tokens and based on OpenAI's official pricing.
-Last updated: September 2025
+Last updated: September 2025 - Based on official OpenAI documentation
 """
 
 from typing import Dict
@@ -10,22 +10,25 @@ from typing import Dict
 class ModelCosts:
     """Centralized cost configuration for all OpenAI models"""
 
-    # Embedding models (cost per 1K tokens)
+    # Embedding models (cost per 1K tokens) - VERIFIED FROM SEARCH
     EMBEDDING_COSTS = {
         "text-embedding-3-small": 0.00002,
         "text-embedding-3-large": 0.00013,
-        "text-embedding-ada-002": 0.00010,
+        "text-embedding-ada-002": 0.0001,
     }
 
-    # Chat completion models (cost per 1K tokens)
     CHAT_COMPLETION_COSTS = {
         "gpt-3.5-turbo": {
+            "input": 0.0005,
+            "output": 0.0015
+        },
+        "gpt-3.5-turbo-0125": {  # Latest version
+            "input": 0.0005,
+            "output": 0.0015
+        },
+        "gpt-3.5-turbo-instruct": {
             "input": 0.0015,
             "output": 0.002
-        },
-        "gpt-3.5-turbo-16k": {
-            "input": 0.003,
-            "output": 0.004
         },
         "gpt-4": {
             "input": 0.03,
@@ -36,6 +39,10 @@ class ModelCosts:
             "output": 0.12
         },
         "gpt-4-turbo": {
+            "input": 0.01,
+            "output": 0.03
+        },
+        "gpt-4-turbo-preview": {
             "input": 0.01,
             "output": 0.03
         },
@@ -75,8 +82,17 @@ class ModelCosts:
 
     @classmethod
     def estimate_token_count(cls, text: str) -> int:
-        """Estimate token count for text (rough approximation: 1 token ≈ 0.75 words)"""
-        return int(len(text.split()) * 1.3)
+        """
+        Estimate token count for text.
+
+        OpenAI's rule: ~1 token per 0.75 words
+        Therefore: 1 word ≈ 1/0.75 = 1.33 tokens
+
+        For more accuracy, consider using tiktoken library in production.
+        """
+        word_count = len(text.split())
+        # Convert words to tokens: words * (1 token / 0.75 words) = words / 0.75
+        return int(word_count / 0.75)  # Correct calculation: words ÷ 0.75
 
 
 # For convenience, create an instance
