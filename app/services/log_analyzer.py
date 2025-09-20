@@ -1,3 +1,4 @@
+import time
 from typing import List, Dict, Any
 import numpy as np
 from sklearn.metrics.pairwise import cosine_similarity
@@ -129,12 +130,17 @@ class LogAnalyzer:
         return similarities
 
     async def analyze_logs(self, logs: List[Dict[str, Any]], prompt: str) -> Dict[str, Any]:
-        """Complete log analysis pipeline"""
-        # Filter logs by semantic similarity
-        filtered_logs, embedding_cost = await self.filter_logs_by_similarity(logs, prompt)
+        """Complete log analysis pipeline with detailed timing"""
 
-        # Analyze with LLM
+        # Time the filtering stage
+        filter_start = time.time()
+        filtered_logs, embedding_cost = await self.filter_logs_by_similarity(logs, prompt)
+        filter_time = time.time() - filter_start
+
+        # Time the LLM analysis stage
+        llm_start = time.time()
         llm_result = await self.llm_service.analyze_logs(filtered_logs, prompt)
+        llm_time = time.time() - llm_start
 
         # Calculate total cost (embedding + LLM)
         total_cost = embedding_cost + llm_result["cost"]
@@ -143,9 +149,14 @@ class LogAnalyzer:
             "total_logs": len(logs),
             "filtered_logs_count": len(filtered_logs),
             "analysis": llm_result["analysis"],
-            "total_cost_usd": total_cost,  # Now includes both embedding and LLM costs
-            "embedding_cost_usd": embedding_cost,  # Separate embedding cost for transparency
-            "llm_cost_usd": llm_result["cost"],  # Separate LLM cost for transparency
+            "total_cost_usd": total_cost,
+            "embedding_cost_usd": embedding_cost,
+            "llm_cost_usd": llm_result["cost"],
             "logs_analyzed": llm_result["logs_analyzed"],
-            "top_filtered_logs": filtered_logs[:settings.max_returned_logs]  # Use configurable max
+            "top_filtered_logs": filtered_logs[:settings.max_returned_logs],
+            # Optional: Add stage timing breakdown
+            "timing_breakdown": {
+                "embedding_filter_seconds": round(filter_time, 3),
+                "llm_analysis_seconds": round(llm_time, 3)
+            }
         }

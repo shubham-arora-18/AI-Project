@@ -21,7 +21,8 @@ class EmbeddingService:
         except Exception as e:
             raise HTTPException(status_code=500, detail=f"Error getting embedding: {str(e)}")
 
-    async def get_embeddings_batch(self, texts: List[str], batch_size: int = 200) -> List[List[float]]:
+    async def get_embeddings_batch(self, texts: List[str], batch_size: int = settings.embedding_batch_size) -> \
+            List[List[float]]:
         """Get embeddings for multiple texts in batches"""
         try:
             all_embeddings = []

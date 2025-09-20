@@ -1,6 +1,7 @@
 from fastapi import APIRouter, File, UploadFile, Form, HTTPException
 from typing import List
 import json
+import time  # NEW: Import time module
 from app.services.log_analyzer import LogAnalyzer
 from app.models import AnalysisResponse, HealthResponse
 
@@ -28,6 +29,8 @@ async def analyze_logs(
     Analyze uploaded JSONL logs based on the provided prompt using semantic similarity.
     Expected format: One JSON log object per line (JSONL format).
     """
+    start_time = time.time()  # NEW: Start timing
+
     try:
         # Parse uploaded logs
         logs = await _parse_log_file(file)
@@ -38,21 +41,29 @@ async def analyze_logs(
         # Analyze logs
         result = await analyzer.analyze_logs(logs, prompt)
 
+        # Calculate total processing time
+        processing_time = time.time() - start_time  # NEW: Calculate elapsed time
+
         return AnalysisResponse(
             prompt=prompt,
             total_logs=result["total_logs"],
             filtered_logs_count=result["filtered_logs_count"],
             analysis=result["analysis"],
-            embedding_cost_usd=result["embedding_cost_usd"],  # Separate embedding cost for transparency
+            embedding_cost_usd=result["embedding_cost_usd"],
             llm_cost_usd=result["llm_cost_usd"],
             total_cost_usd=result["total_cost_usd"],
+            processing_time_seconds=round(processing_time, 3),  # NEW: Add processing time
             top_filtered_logs=result["top_filtered_logs"],
+            timing_breakdown=result["timing_breakdown"],
             success=True
         )
 
     except HTTPException:
         raise
     except Exception as e:
+        # Still capture timing even for errors (optional)
+        processing_time = time.time() - start_time
+        print(f"Error occurred after {processing_time:.3f} seconds: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Error processing logs: {str(e)}")
 
 

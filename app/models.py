@@ -16,7 +16,9 @@ class AnalysisResponse(BaseModel):
     embedding_cost_usd: float
     llm_cost_usd: float
     total_cost_usd: float
+    processing_time_seconds: float  # NEW: API execution time
     top_filtered_logs: List[Dict[str, Any]]  # Flexible - any JSON structure
+    timing_breakdown: Optional[Dict[str, Any]]
     success: bool
 
 
