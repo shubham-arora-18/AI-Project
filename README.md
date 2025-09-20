@@ -16,8 +16,8 @@ A FastAPI-based backend service that uses semantic similarity and LLM analysis t
 ### Installation
 ```bash
 # Clone repository
-git clone <repository-url>
-cd log-analysis-backend
+git clone git@github.com:shubham-arora-18/AI-Project.git
+cd AI-Project
 
 # Create virtual environment
 python -m venv venv
@@ -33,6 +33,7 @@ cp sample.env .env
 cd app
 # Run the application
 python main.py
+# Once the server is started, the documentation can be found here: http://localhost:8000/docs
 ```
 
 ### Testing
