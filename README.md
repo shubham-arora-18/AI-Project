@@ -29,10 +29,8 @@ pip install -r requirements.txt
 # Configure environment
 cp sample.env .env
 # Edit .env with your OpenAI API key
-
-cd app
 # Run the application
-python main.py
+python -m app.main
 # Once the server is started, the documentation can be found here: http://localhost:8000/docs
 ```
 
