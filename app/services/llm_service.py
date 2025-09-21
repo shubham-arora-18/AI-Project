@@ -66,7 +66,7 @@ class LLMService:
             log_line = f"Log {i} (similarity: {similarity:.3f}):"
             if timestamp:
                 log_line += f" [{timestamp}]"
-            log_line += f" {main_content}"
+            log_line += f" complete_log: {main_content}"
 
             log_lines.append(log_line)
 
