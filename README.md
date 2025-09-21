@@ -16,7 +16,7 @@ A FastAPI-based backend service that uses semantic similarity and LLM analysis t
 ### Installation
 ```bash
 # Clone repository
-git clone git@github.com:shubham-arora-18/AI-Project.git
+git clone https://github.com/shubham-arora-18/AI-Project.git
 cd AI-Project
 
 # Create virtual environment
