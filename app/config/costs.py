@@ -47,8 +47,8 @@ class ModelCosts:
             "output": 0.03
         },
         "gpt-4o": {
-            "input": 0.005,
-            "output": 0.015
+            "input": 0.0025,
+            "output": 0.01
         },
         "gpt-4o-mini": {
             "input": 0.00015,

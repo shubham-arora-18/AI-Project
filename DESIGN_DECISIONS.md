@@ -1,10 +1,10 @@
 # Log Analysis Backend
 
-A FastAPI-based backend service that uses semantic similarity and LLM analysis to identify relevant log entries for incident investigation. Built with flexibility, cost optimization in mind.
+A FastAPI-based backend service that uses semantic similarity and LLM analysis to identify relevant log entries for incident investigation. Built with flexibility, cost optimization and production readiness in mind.
 
 ## 🚀 Features
 
-- **📁 Universal Log Support**: Flexible JSONL parser that works with any log format as long as it is in json format
+- **📁 Universal Log Support**: Flexible JSONL parser that works with any json log format
 - **🧠 Semantic Filtering**: Uses OpenAI embeddings for intelligent log relevance detection
 - **🤖 LLM Analysis**: GPT-powered incident analysis with actionable insights
 - **💰 Cost Optimization**: Transparent cost tracking with embedding + LLM breakdown
@@ -31,12 +31,12 @@ A FastAPI-based backend service that uses semantic similarity and LLM analysis t
 #### 1. **Two-Stage Processing Pipeline**
 - **Decision**: Embedding-based filtering → LLM analysis
 - **Rationale**: Cost optimization - only send relevant logs to expensive LLM
-- **Tradeoff**: Additional latency for embedding calls vs. massive cost savings
+- **Tradeoff**: Additional latency for embedding calls vs. Massive cost savings
 
 #### 2. **Flexible Schema-Free Design**
 - **Decision**: No rigid log models, dynamic field extraction
 - **Rationale**: Support any log format (Kubernetes, nginx, custom apps)
-- **Tradeoff**: Additional cost for embeddings vs. Maximum flexibility
+- **Tradeoff**: Additional cost and latency for embeddings vs. Maximum flexibility and filtered logs quality
 
 #### 3. **Centralized Cost Management**
 - **Decision**: Single `costs.py` file for all pricing
@@ -59,20 +59,20 @@ A FastAPI-based backend service that uses semantic similarity and LLM analysis t
 - **Why**: Best cost/performance ratio at $0.00002 per 1K tokens
 - **Alternative**: `text-embedding-3-large` for higher accuracy (6.5x more expensive)
 - **Use Case**: Perfect for log similarity matching where speed > precision
+- **Configurable**: Can switch via `EMBEDDING_MODEL` environment variable
 
-### LLM Model: `gpt-3.5-turbo` (Default)
+### LLM Model: `gpt-4o-mini` (Default)
 - **Why**: Excellent cost/performance for log analysis
-- **Cost**: $0.0005 input / $0.0015 output per 1K tokens
-- **Alternative**: `gpt-4o-mini` for complex reasoning (3x more expensive)
+- **Cost**: $0.00015 input / $0.0006 output per 1K tokens
+- **Alternative**: `gpt-4o` for better output quality (15x more expensive)
 - **Configurable**: Can switch via `ANALYSIS_MODEL` environment variable
 
 ### Model Comparison
 
 | Model | Input Cost | Output Cost | Best For |
 |-------|------------|-------------|----------|
-| gpt-3.5-turbo | $0.0005 | $0.0015 | General log analysis |
-| gpt-4o-mini | $0.00015 | $0.0006 | High-volume, simple tasks |
-| gpt-4o | $0.005 | $0.015 | Complex incident analysis |
+| gpt-4o-mini | $0.00015   | $0.0006     | High-volume, simple tasks |
+| gpt-4o | $0.0025    | $0.010      | Complex incident analysis |
 
 ## 🎯 Semantic Similarity vs. Keyword Filtering
 
@@ -122,7 +122,7 @@ All get intelligently processed without code changes!
 ### Current Implementation
 - **Batch Processing**: 200 logs per embedding API call
 - **Sequential Batches**: Process batches one after another
-- **Memory Efficient**: Stream processing for large files
+- **Prevents OpenAI Rate Limits**: The numbers of logs per batch and sequential batch calls make sure the OpenAI api limits are not breached.
 
 ### 🚀 Potential Improvements
 
@@ -226,4 +226,4 @@ EMBEDDING_BATCH_SIZE=200                   # Batch size for embeddings
    - Improve prompt engineering
 
 ### Performance Benchmarks
-- 10,000 logs(considering, log file shared in assignment, 10000*250 = 2.5Mil Input Tokens): ~240 seconds, ~$0.025
+- 10,000 logs(considering, log file shared in assignment, 10000*250 = 2.5Mil Input Tokens): ~230 seconds, ~$0.025
